@@ -13,8 +13,14 @@ class Game:
 		while self.running:
 			dt = self.time.tick()
 
-			self.input.update()
-			self.event_bus.flush()
+			self.update(dt)
+			self.render()
 
-			self.movement.update(dt)
-			self.event_bus.flush()
+	def update(self, dt):
+		self.input.update(dt)
+		self.world.update(dt)
+		self.movement.update(dt)
+		self.event_bus.flush()
+
+	def render(self):
+		pass

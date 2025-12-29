@@ -1,11 +1,16 @@
-from core import Game, EventBus, World
+from core import Game, GameState, EventBus, World
 from entities import SpaceShip
+from events import AsteroidHitEvent, AsteroidAvoidedEvent
 from systems import InputSystem, MovementSystem, TimeSystem
 
 
 def main():
 	event_bus = EventBus()
 
+	game_state = GameState()
+	event_bus.subscribe(AsteroidHitEvent, game_state.on_asteroid_hit)
+	event_bus.subscribe(AsteroidAvoidedEvent, game_state.on_asteroid_avoided)
+	
 	space_ship = SpaceShip(event_bus)
 	world = World([space_ship])
 	

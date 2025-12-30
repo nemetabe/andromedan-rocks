@@ -1,7 +1,7 @@
 from core import Game, GameState, EventBus, World
 from entities import SpaceShip
 from events import AsteroidHitEvent, AsteroidAvoidedEvent
-from systems import InputSystem, MovementSystem, TimeSystem
+from systems import InputSystem, MovementSystem, Clock
 
 
 def main():
@@ -16,7 +16,7 @@ def main():
 	
 	input_sytem = InputSystem(event_bus)
 	movement_system = MovementSystem(world)
-	time_system = TimeSystem()
+	time_system = Clock()
 
 	game = Game(
 		time=time_system,

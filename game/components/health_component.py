@@ -1,7 +1,6 @@
-from .component import Component
+from ..core import Component
 
 
-class HealthComponent(Component):
-    def __init__(self, hp: int, max_hp: int):
+class Health(Component):
+    def __init__(self, hp: int):
         self.hp = hp
-        self.max_hp = max_hp

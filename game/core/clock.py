@@ -1,7 +1,7 @@
 import time
 
 
-class TimeSystem:
+class Clock:
     def __init__(self):
         self.last_time = None
 

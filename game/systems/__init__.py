@@ -1,3 +1,3 @@
-from .time_system import TimeSystem
+from ..core.clock import Clock
 
-__all__ = ["TimeSystem"]
+__all__ = ["Clock"]

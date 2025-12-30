@@ -1,5 +1,5 @@
 from abc import ABC
-from ..components.component import Component
+from .component import Component
 
 
 class Entity(ABC):

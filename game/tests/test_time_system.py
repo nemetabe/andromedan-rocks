@@ -1,9 +1,9 @@
 import time
-from systems.time_system import TimeSystem
+from game.core.clock import Clock
 
 
 def test_tick_measures_elapsed_time():
-    time_system = TimeSystem()
+    time_system = Clock()
     time_system.reset()
 
     dt1 = time_system.tick()

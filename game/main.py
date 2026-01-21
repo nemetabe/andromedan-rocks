@@ -1,33 +1,95 @@
-from core import Game, GameState, EventBus, World
-from entities import SpaceShip
-from events import AsteroidHitEvent, AsteroidAvoidedEvent
-from systems import InputSystem, MovementSystem, TimeSystem
+from .core import Game, World, GameState
+from .core.clock import Clock
+from .systems.terminal_renderer import TerminalRenderer
+
+from .events import MoveIntentEvent
+from .events import DebugEventLogger
+from .events import EntityMovedEvent
+from .events import Event
+from .events import CollisionEvent
+from .events import EntityDestroyedEvent
+from .events import AsteroidSpawnedEvent
+
+from .core.entity_factory import EntityFactory
+
+from .systems.movement_system import MovementSystem
+from .systems.asteroid_spawn_system import AsteroidSpawnSystem
+from .systems.collision_system import CollisionSystem
+from .systems.collision_rules_system import CollisionRulesSystem
+from .systems.input_system import InputSystem
+from .systems.terminal_input import TerminalInput
 
 
 def main():
-	event_bus = EventBus()
+    # -------------------------
+    # infrastructure
+    # -------------------------
+    clock = Clock()
+    world = World(width=60, height=30)
+    player = EntityFactory.create_player_space_ship(x=30, y=4)
+    world.add_player(player)
 
-	game_state = GameState()
-	event_bus.subscribe(AsteroidHitEvent, game_state.on_asteroid_hit)
-	event_bus.subscribe(AsteroidAvoidedEvent, game_state.on_asteroid_avoided)
-	
-	space_ship = SpaceShip(event_bus)
-	world = World([space_ship])
-	
-	input_sytem = InputSystem(event_bus)
-	movement_system = MovementSystem(world)
-	time_system = TimeSystem()
+    # -------------------------
+    # input (platform-specific)
+    # -------------------------
+    terminal_input = TerminalInput(world)
+    terminal_input.start()
 
-	game = Game(
-		time=time_system,
-		input=input_sytem,
-		movement=movement_system,
-		world=world,
-		event_bus=event_bus
-	)
+    input_system = InputSystem(world, terminal_input)
 
-	game.run()
+    # -------------------------
+    # game systems
+    # -------------------------
+    movement_system = MovementSystem(world)
+    asteroid_spawn_system = AsteroidSpawnSystem(world)
+    collision_system = CollisionSystem(world)
+    collision_rules_system = CollisionRulesSystem(event_bus=world.event_bus)
 
+    renderer = TerminalRenderer(world)
+    game_state = GameState(world.event_bus)
+    debug_event_logger = DebugEventLogger(world.event_bus)
+    # -------------------------
+    # event wiring
+    # -------------------------
+    world.event_bus.subscribe(
+        Event,
+        debug_event_logger.log
+    )
+    world.event_bus.subscribe(
+        MoveIntentEvent,
+        movement_system.on_move_intent_event
+    )
+    world.event_bus.subscribe(
+        EntityMovedEvent,
+        world.map_manager.on_entity_moved_event
+    )
+    world.event_bus.subscribe(
+        EntityDestroyedEvent,
+        world.map_manager.on_entity_destroyed_event
+    )
+    world.event_bus.subscribe(
+        AsteroidSpawnedEvent,
+        world.map_manager.on_entity_spawned_event
+    )
 
-if __name__ == "__main__":
-	main()
+    # -------------------------
+    # game
+    # -------------------------
+    game = Game(
+        time=clock,
+        input_system=input_system,
+        movement_system=movement_system,
+        collision_system=collision_system,
+        renderer=renderer,
+        asteroid_spawn_system=asteroid_spawn_system,
+        world=world,
+        game_state=game_state,
+    )
+
+    # -------------------------
+    # run
+    # -------------------------
+    try:
+        game.run()
+    finally:
+        terminal_input.stop()

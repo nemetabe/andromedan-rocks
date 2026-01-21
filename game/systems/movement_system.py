@@ -1,6 +1,7 @@
-from core import System
-from events import EntityMovedEvent, MovementBockedEvent
-from components import Position, Motion, Direction
+from .system import System
+from ..events import EntityMovedEvent, MovementBockedEvent
+from ..components import Position, Motion, Direction
+from math import floor
 
 
 class MovementSystem(System):
@@ -24,16 +25,16 @@ class MovementSystem(System):
     def update(self, dt: float):
         for entity in self.world.query(Position, Motion, Direction):
             old_pos = entity.get(Position)
-            speed = entity.get(Motion)
+            speed = entity.get(Motion).speed
             displacement = entity.get(Direction)
 
             # calculate the length of the vector of displacement
-            distance = speed.speed
+            distance = speed
 
             # calculate end point of the vector of displacement
-            # relativ to the position
-            dx = int(old_pos.x + (distance * displacement.x)*dt)
-            dy = int(old_pos.y + (distance * displacement.y)*dt)
+            # relative to the position
+            dx = int(old_pos.x + (distance * displacement.dx)*floor(dt))
+            dy = int(old_pos.y + (distance * displacement.dy)*floor(dt))
 
             if self.world.map_manager.is_walkable(
                     old_pos.x + dx,
